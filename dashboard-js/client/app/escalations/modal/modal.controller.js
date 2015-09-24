@@ -4,7 +4,7 @@ angular.module('dashboardJsApp')
   .controller('RuleEditorModalCtrl', function($scope, $modalInstance, ruleToEdit, processes) {
 
     $scope.rule = ruleToEdit;
-    $scope.rule.bp =  {sID:$scope.rule.sID_BP, sName:$scope.rule.sID_BP};  
+    $scope.rule.bp =  {sID:$scope.rule.sID_BP, sName:$scope.rule.sID_BP};
     $scope.processesList = [$scope.rule.bp];
 
 
@@ -17,27 +17,28 @@ angular.module('dashboardJsApp')
         });
       }
     }, function () {
-      $scope.processesList = "error";   
+      $scope.processesList = "error";
     });
-    
+
     $scope.processesLoaded = function() {
       if ($scope.processesList)
       return true;
     return false;
     }
-    
+
      $scope.processesLoadError = function() {
       if ($scope.processesList && $scope.processesList == "error")
       return true;
     return false;
     }
- 
+
     $scope.save = function () {
-      // var ruleToSave = converter.convert($scope.slot);
-      // $modalInstance.close(ruleToSave);
+      var ruleToSave = converter.convert($scope.rule);
+       $modalInstance.close(ruleToSave);
     };
 
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
-    };    
+    };
+
   });
