@@ -32,9 +32,8 @@ angular.module('dashboardJsApp')
     return false;
     }
 
-    $scope.save = function () {
-      var ruleToSave = converter.convert($scope.rule);
-       $modalInstance.close(ruleToSave);
+    $scope.save = function () {      
+       $modalInstance.close($scope.rule);
     };
 
     $scope.cancel = function () {
