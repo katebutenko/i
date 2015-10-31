@@ -33,11 +33,11 @@ public class DocumentAccessHandler_IGov extends AbstractDocumentAccessHandler {
 
     @Override
     public DocumentAccess getAccess() {
-        LOG.info("[getAccess]accessCode=", accessCode);
+        LOG.info("[getAccess]accessCode = {} ", accessCode);
         DocumentAccess oDocumentAccess = documentAccessDao.getDocumentAccess(accessCode);
 
         if (oDocumentAccess == null)
-            throw new DocumentNotFoundException("Document Access not found (accessCode="+accessCode+")");
+            throw new DocumentNotFoundException("Document Access not found");// (accessCode="+accessCode+")
 
         if (isBlank(oDocumentAccess.getsCodeType()))
             return oDocumentAccess;
@@ -76,9 +76,10 @@ public class DocumentAccessHandler_IGov extends AbstractDocumentAccessHandler {
     public Document getDocument() {
         Document doc = documentDao.getDocument( getAccess().getID_Document() );
 
-        if (documentTypeId != null &&
-            !documentTypeId.equals(doc.getDocumentType().getId())) {
-            LOG.debug("Document not found. Access code {}, type {}.", accessCode, documentTypeId);
+        LOG.info("Document doc.getDocumentType().getId(): {}.", doc.getDocumentType().getId());
+
+        if (documentTypeId != null && !documentTypeId.equals(doc.getDocumentType().getId())) {
+            LOG.info("Document not found. Access code {}, type {}.", accessCode, documentTypeId);
             throw new DocumentNotFoundException("Document Access not found");
         }
 

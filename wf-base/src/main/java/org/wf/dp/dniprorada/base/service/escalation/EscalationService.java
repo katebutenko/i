@@ -21,6 +21,7 @@ import org.wf.dp.dniprorada.base.dao.EscalationRuleFunctionDao;
 import org.wf.dp.dniprorada.base.model.EscalationRule;
 import org.wf.dp.dniprorada.base.model.EscalationRuleFunction;
 import org.wf.dp.dniprorada.base.util.BPMNUtil;
+import org.wf.dp.dniprorada.util.luna.AlgorithmLuna;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,9 @@ import java.util.Map;
 
 @Service
 public class EscalationService {
-    private static final Logger log = Logger.getLogger(EscalationService.class);
+    private static final String SEARCH_DELAYED_TASKS_URL = "/task-activiti/";
 
+    private static final Logger log = Logger.getLogger(EscalationService.class);
 
     @Autowired
     private EscalationRuleFunctionDao escalationRuleFunctionDao;
@@ -39,10 +41,10 @@ public class EscalationService {
 
     @Autowired
     private FormService formService;
-    
+
     @Autowired
     private RepositoryService repositoryService;
-    
+
     @Autowired
     private IdentityService identityService;
 
@@ -60,10 +62,9 @@ public class EscalationService {
         try {
             List<EscalationRule> aEscalationRule = escalationRuleDao.findAll();
             for (EscalationRule oEscalationRule : aEscalationRule) {
-                runEscalationRule(oEscalationRule);
+                runEscalationRule(oEscalationRule, "https://region.org.gov.ua");
 
             }
-            //return escalationRuleFunctionDao.saveOrUpdate(nID, sName, sBeanHandler);
         } catch (Exception oException) {
             log.error("[getTaskData]:" + oException);
             throw new ActivitiRestException("ex in controller!", oException);
@@ -71,16 +72,17 @@ public class EscalationService {
 
     }
 
-    public void runEscalationRule(Long nID_escalationRule){
-        runEscalationRule(escalationRuleDao.findById(nID_escalationRule).orNull());
+    public void runEscalationRule(Long nID_escalationRule, String regionalServerPath) {
+        runEscalationRule(escalationRuleDao.findById(nID_escalationRule).orNull(), regionalServerPath);
     }
 
-    private void runEscalationRule(EscalationRule oEscalationRule) {
+    private void runEscalationRule(EscalationRule oEscalationRule, String regionalServerPath) {
         EscalationRuleFunction oEscalationRuleFunction = oEscalationRule.getoEscalationRuleFunction();
 
         String sID_BP = oEscalationRule.getsID_BP();
         log.info("[getTaskData]:sID_BP=" + sID_BP);
-        TaskQuery oTaskQuery = taskService.createTaskQuery().processDefinitionKey(sID_BP);//.taskCreatedAfter(dateAt).taskCreatedBefore(dateTo)
+        TaskQuery oTaskQuery = taskService.createTaskQuery()
+                .processDefinitionKey(sID_BP);//.taskCreatedAfter(dateAt).taskCreatedBefore(dateTo)
 
         String sID_State_BP = oEscalationRule.getsID_UserTask();
         log.info("[getTaskData]:sID_State_BP=" + sID_State_BP);
@@ -93,24 +95,23 @@ public class EscalationService {
         List<Task> aTask = oTaskQuery.listPage(nRowStart, nRowsMax);
 
         for (Task oTask : aTask) {
-            //long nID_task_activiti = Long.valueOf(oTask.getId());
-            //Map<String, Object> mTaskParam = getTaskData(nID_task_activiti);//new HashMap()
             try {
-            Map<String, Object> mTaskParam = getTaskData(oTask);
+                Map<String, Object> mTaskParam = getTaskData(oTask);
+                mTaskParam.put("processLink",
+                        regionalServerPath + SEARCH_DELAYED_TASKS_URL + mTaskParam.get("nID_task_activiti"));
 
-            log.info("[getTaskData]:checkTaskOnEscalation mTaskParam=" + mTaskParam);
-            escalationHelper.checkTaskOnEscalation(mTaskParam
-                    , oEscalationRule.getsCondition()
-                    , oEscalationRule.getSoData()
-                    , oEscalationRule.getsPatternFile()
-                    , oEscalationRuleFunction.getsBeanHandler()
-            );
-            } catch (ClassCastException e){
+                log.info("[getTaskData]:checkTaskOnEscalation mTaskParam=" + mTaskParam);
+                escalationHelper.checkTaskOnEscalation(mTaskParam
+                        , oEscalationRule.getsCondition()
+                        , oEscalationRule.getSoData()
+                        , oEscalationRule.getsPatternFile()
+                        , oEscalationRuleFunction.getsBeanHandler()
+                );
+            } catch (ClassCastException e) {
                 log.error("Error occured while processing task " + oTask.getId(), e);
             }
         }
     }
-
 
     private Map<String, Object> getTaskData(Task oTask) {//Long nID_task_activiti
         long nID_task_activiti = Long.valueOf(oTask.getId());
@@ -120,69 +121,70 @@ public class EscalationService {
 
         Map<String, Object> m = new HashMap();
 
-        //Date = Date
         long nDiffMS = 0;
         if (oTask.getDueDate() != null) {
             nDiffMS = oTask.getDueDate().getTime() - oTask.getCreateTime().getTime();
-        }else{
+        } else {
             nDiffMS = DateTime.now().toDate().getTime() - oTask.getCreateTime().getTime();
-            //Date oDateTo = DateTime.now().toDate();
         }
         log.info("[getTaskData]:nDiffMS=" + nDiffMS);
-        
+
         long nElapsedHours = nDiffMS / 1000 / 60 / 60;
         log.info("[getTaskData]:nElapsedHours=" + nElapsedHours);
         m.put("nElapsedHours", nElapsedHours);
-        
+
         long nElapsedDays = nElapsedHours / 24;
         log.info("[getTaskData]:nElapsedDays=" + nElapsedDays);
         m.put("nElapsedDays", nElapsedDays);
         m.put("nDays", nElapsedDays);
-
-
+        
         TaskFormData oTaskFormData = formService.getTaskFormData(oTask.getId());
         for (FormProperty oFormProperty : oTaskFormData.getFormProperties()) {
-            log.info(String.format("[getTaskData]Matching property %s:%s:%s with fieldNames", oFormProperty.getId(), oFormProperty.getName(), oFormProperty.getType().getName()));
+            log.info(String.format("[getTaskData]Matching property %s:%s:%s with fieldNames", oFormProperty.getId(),
+                    oFormProperty.getName(), oFormProperty.getType().getName()));
             if ("long".equalsIgnoreCase(oFormProperty.getType().getName()) &&
-            		StringUtils.isNumeric(oFormProperty.getValue())) {
+                    StringUtils.isNumeric(oFormProperty.getValue())) {
                 m.put(oFormProperty.getId(), Long.valueOf(oFormProperty.getValue()));
             } else {
                 m.put(oFormProperty.getId(), oFormProperty.getValue());
             }
         }
-        
+
         m.put("sID_BP", StringUtils.substringBefore(oTask.getProcessDefinitionId(), ":"));
-        m.put("nID_task_activiti", oTask.getId());
+        m.put("nID_task_activiti", AlgorithmLuna.getProtectedNumber(Long.valueOf(oTask.getProcessInstanceId())));
         m.put("sTaskName", oTask.getName());
         m.put("sTaskDescription", oTask.getDescription());
         m.put("sProcessInstanceId", oTask.getProcessInstanceId());
-
-        List<User> aUser = BPMNUtil.getUsersInfoBelongToProcess(repositoryService, identityService, oTask.getProcessDefinitionId(), oTask.getTaskDefinitionKey());
+        m.put("sLoginAssigned", oTask.getAssignee());
+        
+        List<User> aUser = BPMNUtil
+                .getUsersInfoBelongToProcess(repositoryService, identityService, oTask.getProcessDefinitionId(),
+                        oTask.getTaskDefinitionKey());
         StringBuffer osaUser = new StringBuffer();
-        int nCount=aUser.size();
-        int n=0;
-        for (User oUser : aUser){
-                n++;
-        	osaUser.append(oUser.getLastName());
-        	osaUser.append(" ");
-        	osaUser.append(oUser.getFirstName());
-        	osaUser.append(" (");
-        	osaUser.append(oUser.getId());
-        	osaUser.append(")");
-                if(n<nCount){
-                    osaUser.append(", ");
-                }
+        int nCount = aUser.size();
+        int n = 0;
+        for (User oUser : aUser) {
+            n++;
+            osaUser.append(oUser.getLastName());
+            osaUser.append(" ");
+            osaUser.append(oUser.getFirstName());
+            osaUser.append(" (");
+            osaUser.append(oUser.getId());
+            osaUser.append(")");
+            if (n < nCount) {
+                osaUser.append(", ");
+            }
         }
-        
-        
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(oTask.getProcessDefinitionId()).singleResult();
-		
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(oTask.getProcessDefinitionId()).singleResult();
+
         m.put("sServiceType", processDefinition != null ? processDefinition.getName() : "");
         m.put("sTaskName", String.format("%s", oTask.getName()));
-        m.put("sTaskNumber", String.format("%s ", oTask.getId().toString()));
+        m.put("sTaskNumber", AlgorithmLuna.getProtectedNumber(Long.valueOf(oTask.getProcessInstanceId())));
         m.put("sElapsedInfo", String.format("%d", nElapsedDays));
         m.put("sResponsiblePersons", String.format("%s", osaUser.toString()));
-        
+
         return m;
     }
 }
