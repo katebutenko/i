@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * @author dgroup
- * @since  28.06.15
+ * @since 28.06.15
  */
 @Component
 public class DocumentAccessHandler_IGov extends AbstractDocumentAccessHandler {
@@ -30,26 +30,26 @@ public class DocumentAccessHandler_IGov extends AbstractDocumentAccessHandler {
     @Autowired
     private DocumentDao documentDao;
 
-
     @Override
     public DocumentAccess getAccess() {
-        LOG.info("[getAccess]accessCode=", accessCode);
+        LOG.info("[getAccess]accessCode = {} ", accessCode);
         DocumentAccess oDocumentAccess = documentAccessDao.getDocumentAccess(accessCode);
 
         if (oDocumentAccess == null)
-            throw new DocumentNotFoundException("Document Access not found (accessCode="+accessCode+")");
+            throw new DocumentNotFoundException("Document Access not found");// (accessCode="+accessCode+")
 
         if (isBlank(oDocumentAccess.getsCodeType()))
             return oDocumentAccess;
 
-        if (isBlank(password) || !isNumeric(password)){
-            if ("SMS".equalsIgnoreCase(oDocumentAccess.getsCodeType())){
+        if (isBlank(password) || !isNumeric(password)) {
+            if ("SMS".equalsIgnoreCase(oDocumentAccess.getsCodeType())) {
                 handleSMS();
             } else {
-                throw new DocumentAccessException("Document Access password wrong (no SMS:"+oDocumentAccess.getsCodeType()+")");
+                throw new DocumentAccessException(
+                        "Document Access password wrong (no SMS:" + oDocumentAccess.getsCodeType() + ")");
             }
         }
-        
+
         int currPass = Integer.valueOf(oDocumentAccess.getAnswer());
         int userPass = Integer.valueOf(password);
         if ("SMS".equalsIgnoreCase(oDocumentAccess.getsCodeType()) && userPass == currPass)
@@ -61,24 +61,24 @@ public class DocumentAccessHandler_IGov extends AbstractDocumentAccessHandler {
     private void handleSMS() {
         try {
             LOG.info("Got {}", accessCode);
-            String sPhone=documentAccessDao.sSentDocumentAccessOTP_Phone(accessCode);
-            if(sPhone ==null){
+            String sPhone = documentAccessDao.sSentDocumentAccessOTP_Phone(accessCode);
+            if (sPhone == null) {
                 throw new DocumentAccessException("Document Access password need - cant send SMS");
-            } else{
-                throw new DocumentAccessException("Document Access password need - sent SMS ("+sPhone+")");
+            } else {
+                throw new DocumentAccessException("Document Access password need - sent SMS (" + sPhone + ")");
             }
         } catch (Exception ex) { // TODO WTF: why sSentDocumentAccessOTP_Phone throw a general exception?
-            throw new DocumentAccessException("Document Access password need - UNKNOWN:"+ex.getMessage(), ex);
+            throw new DocumentAccessException("Document Access password need - UNKNOWN:" + ex.getMessage(), ex);
         }
     }
 
-
     public Document getDocument() {
-        Document doc = documentDao.getDocument( getAccess().getID_Document() );
+        Document doc = documentDao.getDocument(getAccess().getID_Document());
 
-        if (documentTypeId != null &&
-            !documentTypeId.equals(doc.getDocumentType().getId())) {
-            LOG.debug("Document not found. Access code {}, type {}.", accessCode, documentTypeId);
+        LOG.info("Document doc.getDocumentType().getId(): {}.", doc.getDocumentType().getId());
+
+        if (documentTypeId != null && !documentTypeId.equals(doc.getDocumentType().getId())) {
+            LOG.info("Document not found. Access code {}, type {}.", accessCode, documentTypeId);
             throw new DocumentNotFoundException("Document Access not found");
         }
 

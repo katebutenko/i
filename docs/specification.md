@@ -36,6 +36,9 @@
 <a href="#37_getAccessKeyt">37. Получения ключа для аутентификации</a><br/> 
 <a href="#38_setTaskQuestions">38. Вызов сервиса уточнения полей формы</a><br/> 
 <a href="#39_setTaskAnswer">39. Вызов сервиса ответа по полям требующим уточнения</a><br/> 
+<a href="#40_AccessServiceLoginRight">40. Получеение и установка прав доступа к rest сервисам</a><br/> 
+<a href="#41_getFlowSlots_Department">41. Получение массива объектов SubjectOrganDepartment по ID бизнес процесса</a><br/> 
+<a href="#42_getPlace">42. Работа с универсальной сущностью Place (области, районы, города, деревни)</a><br/> 
 
 ## iGov.ua APIs
 
@@ -1695,6 +1698,7 @@ http://test.igov.org.ua/wf/service/services/updateHistoryEvent_Service?nID_Proce
  - "По заявці №\[nID_Process\] задане прохання уточнення: \[sBody\]" (если sToken не пустой) -- согласно сервису в <a href="https://github.com/e-government-ua/i/blob/test/docs/specification.md#38_setTaskQuestions">запроса на уточнение</a>
  - "По заявці №\[nID_Process\] дана відповідь громадянином: \[sBody\]" (если sToken пустой) -- согласно сервису <a href="https://github.com/e-government-ua/i/blob/test/docs/specification.md#39_setTaskAnswer">ответа на запрос по уточнению</a>
  - плюс перечисление полей из soData в формате таблицы Поле / Тип / Текущее значение
+ 
 <a name="18_workWithFlowSlot">
 #### 18. Электронные очереди (слоты потока, расписания и тикеты)
 </a><a href="#0_contents">↑Up</a><br/>
@@ -2059,6 +2063,7 @@ Eсли задано два ключа от разных записей -- ве�
 * sDateTo - конечная дата создания таски, по умолчанию - **сегодня**
 * nRowStart - начало выборки для пейджирования, по умолчанию - **0**
 * nRowsMax - размер выборки для пейджирования, по умолчанию - **1000**
+* bIncludeHistory - включить информацию по хисторик задачам, по умолчанию - **true**
 
 Поля по умолчанию, которые всегда включены в выборку:
 * nID_Task - "id таски"
@@ -2088,7 +2093,7 @@ https://test.region.igov.org.ua/wf/service/rest/file/downloadTasksData?&sID_BP=d
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/getLoginBPs?sLogin=[userId]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/getLoginBPs?sLogin=[userId]**
 
 * sLogin - ID пользователя
 
@@ -2124,7 +2129,7 @@ https://test.region.igov.org.ua/wf/service/rest/getLoginBPs?sLogin=kermit
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowIncludes?nID_Flow_ServiceData=[flowId]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowIncludes?nID_Flow_ServiceData=[flowId]**
 
 * flowId - ID потока
 
@@ -2146,7 +2151,7 @@ https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowIncludes?nID_Flow_
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowInclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&sName=[sName]&sRegionTime=[sRegionTime]&sDateTimeAt=[sDateTimeAt]&sDateTimeTo=[sDateTimeTo]&saRegionWeekDay=[saRegionWeekDay]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowInclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&sName=[sName]&sRegionTime=[sRegionTime]&sDateTimeAt=[sDateTimeAt]&sDateTimeTo=[sDateTimeTo]&saRegionWeekDay=[saRegionWeekDay]**
 
 * nID - ИД-номер //опциональный ,если задан - редактирование
 * nID_Flow_ServiceData - номер-ИД потока (обязательный если нет sID_BP)
@@ -2179,7 +2184,7 @@ https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowInclude?nID_Flow_S
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/removeSheduleFlowInclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&nID=[nID]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/removeSheduleFlowInclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&nID=[nID]**
 
 * nID_Flow_ServiceData - номер-ИД потока (обязательный если нет sID_BP)
 * sID_BP - строка-ИД бизнес-процесса потока (обязательный если нет nID_Flow_ServiceData)
@@ -2205,7 +2210,7 @@ https://test.region.igov.org.ua/wf/service/flow/removeSheduleFlowInclude?nID_Flo
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowExcludes?nID_Flow_ServiceData=[flowId]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowExcludes?nID_Flow_ServiceData=[flowId]***
 
 * flowId - ID потока
 
@@ -2227,7 +2232,7 @@ https://test.region.igov.org.ua/wf/service/flow/getSheduleFlowExcludes?nID_Flow_
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowExclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&sName=[sName]&sRegionTime=[sRegionTime]&sDateTimeAt=[sDateTimeAt]&sDateTimeTo=[sDateTimeTo]&saRegionWeekDay=[saRegionWeekDay]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowExclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&sName=[sName]&sRegionTime=[sRegionTime]&sDateTimeAt=[sDateTimeAt]&sDateTimeTo=[sDateTimeTo]&saRegionWeekDay=[saRegionWeekDay]**
 
 * nID - ИД-номер //опциональный ,если задан - редактирование
 * nID_Flow_ServiceData - номер-ИД потока (обязательный если нет sID_BP)
@@ -2260,7 +2265,7 @@ https://test.region.igov.org.ua/wf/service/flow/setSheduleFlowExclude?nID_Flow_S
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/removeSheduleFlowExclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&nID=[nID]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/removeSheduleFlowExclude?nID_Flow_ServiceData=[nID_Flow_ServiceData]&nID=[nID]**
 
 * nID_Flow_ServiceData - номер-ИД потока (обязательный если нет sID_BP)
 * sID_BP - строка-ИД бизнес-процесса потока (обязательный если нет nID_Flow_ServiceData)
@@ -2318,7 +2323,7 @@ https://test.region.igov.org.ua/wf/service/rest/getPatternFile?sPathFile=print//
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getFlowSlotTickets?sLogin=[sLogin]&bEmployeeUnassigned=[true|false]&sDate=[yyyy-MM-dd]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getFlowSlotTickets?sLogin=[sLogin]&bEmployeeUnassigned=[true|false]&sDate=[yyyy-MM-dd]**
 -- возвращает активные тикеты, отсортированные по startDate
 
 * sLogin - имя пользоватеял для которого необходимо вернуть тикеты
@@ -2352,7 +2357,7 @@ https://test.region.igov.org.ua/wf/service/flow/getFlowSlotTickets?sLogin=kermit
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/tasks/getTasksByOrder?nID_Protected=[nID_Protected]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/tasks/getTasksByOrder?nID_Protected=[nID_Protected]**
 -- возвращает спискок ID пользовательских тасок по номеру заявки
 
 * nID_Protected - Номер заявки, в котором, все цифры кроме последней - ID процесса в activiti. А последняя цифра - его контрольная сумма зашифрованная по алгоритму Луна.
@@ -2389,17 +2394,17 @@ Responce status 200.
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.igov.org.ua/wf/service/services/getStatisticServiceCounts?nID_Service=[nID_Service]
+**HTTP Context: https://test.igov.org.ua/wf/service/services/getStatisticServiceCounts?nID_Service=[nID_Service]**
 
 * nID_Service - ID сервиса.
 
 Примеры:
 
-https://test.igov.org.ua/wf/service/services/getStatisticServiceCounts?nID_Service=1
+https://test.igov.org.ua/wf/service/services/getStatisticServiceCounts?nID_Service=26
 
 Результат
 ```json
-[{"nCount":1,"sName":"Івано-Франківська"},{"nCount":3,"sName":"Дніпропетровська"},{"nCount":1,"sName":"Львівська"}]
+[{"nCount":5,"nRate":0,"nTimeHours":"0","sName":"Київ"},{"nCount":15,"nRate":0,"nTimeHours":"2","sName":"Дніпропетровська"}]
 ```
 --------------------------------------------------------------------------------------------------------------------------
 
@@ -2503,7 +2508,7 @@ ID созданного attachment - "id":"25"
 
 
 ПРИМЕР:
-test.region.igov.org.ua/wf/service/escalation/setEscalationRule?sID_BP=zaporoshye_mvk-1a&sID_UserTask=*&sCondition=nElapsedDays==nDaysLimit&soData={nDaysLimit:3,asRecipientMail:[test@email.com]}&sPatternFile=escalation/escalation_template.html&nID_EscalationRuleFunction=1
+test.region.igov.org.ua/wf/service/escalation/setEscalationRule?sID_BP=zaporoshye_mvk-1a&sID_UserTask=*&sCondition=nElapsedDays==nDaysLimit&soData={nDaysLimit:3,asRecipientMail:['test@email.com']}&sPatternFile=escalation/escalation_template.html&nID_EscalationRuleFunction=1
 
 ОТВЕТ:
 ```json
@@ -2546,7 +2551,7 @@ test.region.igov.org.ua/wf/service/escalation/setEscalationRule?sID_BP=zaporoshy
 
 **HTTP Metod: GET**
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/tasks/getTasksByText?sFind=[sFind]&sLogin=[sLogin]&bAssigned=true
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/tasks/getTasksByText?sFind=[sFind]&sLogin=[sLogin]&bAssigned=true**
 -- возвращает список ID тасок у которых в полях встречается указанный текст
 
 * sFind - текст для поиска в полях заявки.
@@ -2589,21 +2594,21 @@ test.region.igov.org.ua/wf/service/escalation/setEscalationRule?sID_BP=zaporoshy
 
 **HTTP Metod: GET**
 
-**HTTP Context: http://server:port/wf/service/services/getAccessKey?
+**HTTP Context: http://server:port/wf/service/services/getAccessKey?**
 -- возвращает ключ для аутентификации
 
 * sAccessContract - контракт
-* sLogin - технический логин
+* sAccessLogin - технический логин
 * sData - контент по которому генерируется ключ
 
 Пример
-<a href="https://test.igov.org.ua/wf/service/services/getAccessKey?sLogin=activiti-master&sAccessContract=Request&sData=/wf/service/setMessage">https://test.igov.org.ua/wf/service/services/getAccessKey?sLogin=activiti-master&sAccessContract=Request&sData=/wf/service/setMessage</a>
+<a href="https://test.igov.org.ua/wf/service/services/getAccessKey?sAccessLogin=activiti-master&sAccessContract=Request&sData=/wf/service/setMessage">https://test.igov.org.ua/wf/service/services/getAccessKey?sAccessLogin=activiti-master&sAccessContract=Request&sData=/wf/service/setMessage</a>
 
 <a name="38_setTaskQuestions">
 ####38. Вызов сервиса уточнения полей формы
 </a><a href="#0_contents">↑Up</a>
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/setTaskQuestions?nID_Protected=[nID_Protected]&saField=[saField]&sMail=[sMail]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/setTaskQuestions?nID_Protected=[nID_Protected]&saField=[saField]&sMail=[sMail]**
 сервис запроса полей, требующих уточнения у гражданина, с отсылкой уведомления
 параметры:
  + nID_Protected - номер-ИД заявки (защищенный)
@@ -2639,7 +2644,7 @@ https://test.region.igov.org.ua/wf/service/rest/setTaskQuestions?nID_Protected=5
 ####39. Вызов сервиса ответа по полям требующим уточнения</a><br/> 
 </a><a href="#0_contents">↑Up</a>
 
-**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/setTaskAnswer?nID_Protected=[nID_Protected]&saField=[saField]&sToken=[sToken]&sBody=[sBody]
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/setTaskAnswer?nID_Protected=[nID_Protected]&saField=[saField]&sToken=[sToken]&sBody=[sBody]**
 
 -- обновляет поля формы указанного процесса значениями, переданными в параметре saField
 **Важно:позволяет обновлять только те поля, для которых в форме бизнес процесса не стоит атрибут writable="false"**
@@ -2677,3 +2682,358 @@ https://test.region.igov.org.ua/wf/service/rest/setTaskAnswer?nID_Protected=5435
 ```json
 {"code":"BUSINESS_ERR","message":"form property 'bankIdinn' is not writable"}
 ```
+
+<a name="40_AccessServiceLoginRight">
+####40. Получеение и установка прав доступа к rest сервисам</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**HTTP Metod: GET**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/access/hasAccessServiceLoginRight?sLogin=[sLogin]&sService=[sService]&sData=[sData]**
+-- возвращает true - если у пользоватля с логином sLogin есть доступ к рест сервиу sService при вызове его с аргументами sData, или false - если доступа нет.
+
+* sLogin - имя пользователя для которого проверяется доступ
+* sService - строка сервиса
+* sData - опциональный параметр со строкой параметров к сервису (формат передачи пока не определен). Если задан бин sHandlerBean (см. ниже) то он может взять на себя проверку допуспности сервиса для данного набора параметров.
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/access/hasAccessServiceLoginRight?sLogin=SomeLogin&sService=access/hasAccessServiceLoginRight
+
+Ответ:
+```json
+false
+```
+
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/access/getAccessServiceLoginRight?sLogin=[sLogin]**
+-- возвращает список всех сервисов доступных пользователю с именем sLogin с формате JSON.
+
+* sLogin - имя пользователя
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/access/getAccessServiceLoginRight?sLogin=TestLogin
+
+Ответ:
+```json
+[
+    "TestService"
+]
+```
+
+
+**HTTP Metod: POST**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/access/setAccessServiceLoginRight**
+-- Сохраняет запись в базе, что пользователь sLogin имеет доступ к сервису sService. Существование такого пользователя и сервиса не проверяется.
+
+Параметры:
+
+* sLogin - имя пользователя
+* sService - строка сервиса
+* sHandlerBean - опцинальный параметр: имя спрингового бина реализующего интерфейс AccessServiceLoginRightHandler, который будет заниматься проверкой прав доступа для данной записи. При сохранении проверяется наличие такого бина, и если его нет - то будет выброшена ошибка.
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/access/setAccessServiceLoginRight
+
+* sLogin=SomeLogin
+* sService=access/hasAccessServiceLoginRight
+
+Ответ:
+``` Status 200 ```
+
+https://test.region.igov.org.ua/wf/service/access/setAccessServiceLoginRight?
+
+* sLogin=SomeLogin
+* sService=access/hasAccessServiceLoginRight
+* sHandlerBean=WrongBean
+
+Ответ:
+```json
+{
+    "code": "SYSTEM_ERR",
+    "message": "No bean named 'WrongBean' is defined"
+}
+```
+
+
+**HTTP Metod: DELETE**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/access/removeAccessServiceLoginRight?sLogin=[sLogin]&sService=[sService]**
+-- Удаляет запись из базы, что пользователь sLogin имеет доступ к сервису sService. Статус код 200 означает что запись успешно удалена. Код 304 - что такая запись не найдена.
+
+Параметры:
+
+* sLogin - имя пользователя
+* sService - строка сервиса
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/access/removeAccessServiceLoginRight?sLogin=TestLogin&sService=TestService
+
+Ответ:
+``` Status 200 ```
+
+https://test.region.igov.org.ua/wf/service/access/removeAccessServiceLoginRight?sLogin=FakeLogin&sService=TestService
+
+Ответ:
+``` Status 304 ```
+
+<a name="41_getFlowSlots_Department">
+####41. Получение массива объектов SubjectOrganDepartment по ID бизнес процесса</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**HTTP Metod: GET**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/flow/getFlowSlots_Department?sID_BP=[sID_BP]**
+-- возвращает массив объектов SubjectOrganDepartment для указанного Activiti BP.
+
+* sID_BP - имя Activiti BP
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/flow/getFlowSlots_Department?sID_BP=dnepr_dms-89
+
+Ответ:
+```json
+[{"sName":"ДМС, Днепр, пр. Ильича, 3 (dnepr_dms-89,dnepr_dms-89s)","nID_SubjectOrgan":2,"sGroup_Activiti":"dnepr_dms_89_bab","nID":13},{"sName":"ДМС, Днепр, вул. Шевченко, 7 (dnepr_dms-89,dnepr_dms-89s)","nID_SubjectOrgan":2,"sGroup_Activiti":"dnepr_dms_89_zhovt","nID":14}]
+```
+
+
+<a name="42_getPlace">
+#### 42. Работа с универсальной сущностью Place (области, районы, города, деревни)</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID`)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459
+
+Ответ
+```json
+{
+    "nLevelArea": null,
+    "nLevel": 0,
+    "o": {
+        "nID": 459,
+        "sName": "Недригайлівський район/смт Недригайлів",
+        "nID_PlaceType": 2,
+        "sID_UA": "5923500000",
+        "sNameOriginal": ""
+    },
+    "a": [
+        {
+            "nLevelArea": null,
+            "nLevel": 1,
+            "o": {
+                "nID": 460,
+                "sName": "Недригайлів",
+                "nID_PlaceType": 4,
+                "sID_UA": "5923555100",
+                "sNameOriginal": ""
+            },
+            "a": []
+        }
+    ]
+}
+```
+**Примечание**: по умолчанию возвращаются иерархия с ограниченным уровнем вложенности детей (поле `nDeep`, по умолчанию равно 1).
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID`) и количества уровней вниз (параметр `nDeep`)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&nDeep=4
+
+Ответ:
+```json
+{
+    "nLevelArea": null,
+    "nLevel": 0,
+    "o": {
+        "nID": 459,
+        "sName": "Недригайлівський район/смт Недригайлів",
+        "nID_PlaceType": 2,
+        "sID_UA": "5923500000",
+        "sNameOriginal": ""
+    },
+    "a": [
+        {
+            "nLevelArea": null,
+            "nLevel": 1,
+            "o": {
+                "nID": 460,
+                "sName": "Недригайлів",
+                "nID_PlaceType": 4,
+                "sID_UA": "5923555100",
+                "sNameOriginal": ""
+            },
+            "a": [
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 458,
+                        "sName": "Вільшана",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923584401",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                },
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 461,
+                        "sName": "Вакулки",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923555101",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                },
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 462,
+                        "sName": "Віхове",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923555102",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                }
+            ]
+        }
+    ]
+}
+```
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `sUA_ID`)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000
+
+```json
+{
+    "nLevelArea": null,
+    "nLevel": 0,
+    "o": {
+        "nID": 459,
+        "sName": "Недригайлівський район/смт Недригайлів",
+        "nID_PlaceType": 2,
+        "sID_UA": "5923500000",
+        "sNameOriginal": ""
+    },
+    "a": [
+        {
+            "nLevelArea": null,
+            "nLevel": 1,
+            "o": {
+                "nID": 460,
+                "sName": "Недригайлів",
+                "nID_PlaceType": 4,
+                "sID_UA": "5923555100",
+                "sNameOriginal": ""
+            },
+            "a": []
+        }
+    ]
+}
+```
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `sUA_ID`) и количества уровней вниз (параметр `nDeep`)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000&nDeep=3
+
+Ответ:
+```json
+{
+    "nLevelArea": null,
+    "nLevel": 0,
+    "o": {
+        "nID": 459,
+        "sName": "Недригайлівський район/смт Недригайлів",
+        "nID_PlaceType": 2,
+        "sID_UA": "5923500000",
+        "sNameOriginal": ""
+    },
+    "a": [
+        {
+            "nLevelArea": null,
+            "nLevel": 1,
+            "o": {
+                "nID": 460,
+                "sName": "Недригайлів",
+                "nID_PlaceType": 4,
+                "sID_UA": "5923555100",
+                "sNameOriginal": ""
+            },
+            "a": [
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 458,
+                        "sName": "Вільшана",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923584401",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                },
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 461,
+                        "sName": "Вакулки",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923555101",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                },
+                {
+                    "nLevelArea": null,
+                    "nLevel": 2,
+                    "o": {
+                        "nID": 462,
+                        "sName": "Віхове",
+                        "nID_PlaceType": 5,
+                        "sID_UA": "5923555102",
+                        "sNameOriginal": ""
+                    },
+                    "a": []
+                }
+            ]
+        }
+    ]
+}
+```
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID` или `sUA_ID`) c фильтрацией по типу (nID_PlaceType)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&nDeep=3&nID_PlaceType=5
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID` или `sUA_ID`) c фильтрацией по региону (bArea)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&bArea=false&nDeep=3
+
+**_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID` или `sUA_ID`) c фильтрацией по корневому региону (bRoot)._**
+
+**HTTP Metod: GET**
+
+https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&bRoot=false&nDeep=3
