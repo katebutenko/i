@@ -39,6 +39,9 @@
 <a href="#40_AccessServiceLoginRight">40. Получеение и установка прав доступа к rest сервисам</a><br/> 
 <a href="#41_getFlowSlots_Department">41. Получение массива объектов SubjectOrganDepartment по ID бизнес процесса</a><br/> 
 <a href="#42_getPlace">42. Работа с универсальной сущностью Place (области, районы, города, деревни)</a><br/> 
+<a href="#43_check_attachment_sign">43. Проверка ЭЦП на атачменте(файл) таски Activiti</a><br/> 
+<a href="#44_check_file_from_redis_sign">44. Проверка ЭЦП на файле хранящемся в Redis</a><br/>
+<a href="#45_getServer">45. Получение информации о сервере</a><br/>
 
 ## iGov.ua APIs
 
@@ -2422,7 +2425,7 @@ https://test.igov.org.ua/wf/service/services/getStatisticServiceCounts?nID_Servi
 * sFileName - имя отправляемого файла
 
 Пример:
-http://localhost:8080/wf-central/service/rest/file/upload_content_as_attachment?nTaskId=24&sDescription=someText&sFileName=FlyWithMe.html
+http://localhost:8080/wf/service/rest/file/upload_content_as_attachment?nTaskId=24&sDescription=someText&sFileName=FlyWithMe.html
 
 Ответ без ошибок:
 ```json
@@ -2810,7 +2813,7 @@ https://test.region.igov.org.ua/wf/service/flow/getFlowSlots_Department?sID_BP=d
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459
+https://test.igov.org.ua/wf/service/getPlacesTree?nID=459
 
 Ответ
 ```json
@@ -2846,7 +2849,7 @@ https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&nDeep=4
+https://test.igov.org.ua/wf/service/getPlacesTree?nID=459&nDeep=4
 
 Ответ:
 ```json
@@ -2918,7 +2921,7 @@ https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&nDeep=4
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000
+https://test.igov.org.ua/wf/service/getPlacesTree?sID_UA=5923500000
 
 ```json
 {
@@ -2952,7 +2955,7 @@ https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000&nDeep=3
+https://test.igov.org.ua/wf/service/getPlacesTree?sID_UA=5923500000&nDeep=3
 
 Ответ:
 ```json
@@ -3024,16 +3027,126 @@ https://test.igov.org.ua/wf-central/service/getPlacesTree?sID_UA=5923500000&nDee
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&nDeep=3&nID_PlaceType=5
+https://test.igov.org.ua/wf/service/getPlacesTree?nID=459&nDeep=3&nID_PlaceType=5
 
 **_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID` или `sUA_ID`) c фильтрацией по региону (bArea)._**
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&bArea=false&nDeep=3
+https://test.igov.org.ua/wf/service/getPlacesTree?nID=459&bArea=false&nDeep=3
 
 **_Получить иерархию объектов вниз начиная с указанного узла (параметр `nID` или `sUA_ID`) c фильтрацией по корневому региону (bRoot)._**
 
 **HTTP Metod: GET**
 
-https://test.igov.org.ua/wf-central/service/getPlacesTree?nID=459&bRoot=false&nDeep=3
+https://test.igov.org.ua/wf/service/getPlacesTree?nID=459&bRoot=false&nDeep=3
+
+
+<a name="43_check_attachment_sign">
+####43. Проверка ЭЦП на атачменте(файл) таски Activiti</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**HTTP Metod: GET**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/file/check_attachment_sign?nID_Task=[nID_Task]&nID_Attach=[nID_Attach]**
+-- возвращает json объект описывающий ЭЦП файла-аттачмента.
+
+* nID_Task - id таски Activiti BP
+* nID_Attach - id атачмента приложеного к таске
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/rest/file/check_attachment_sign?nID_Task=7315073&nID_Attach=7315075
+
+Ответ:
+```json
+{"state":"ok","customer":{"inn":"1436057000","fullName":"Сервіс зберігання сканкопій","signatureData":{"name":"АЦСК ПАТ КБ «ПРИВАТБАНК»","serialNumber":"0D84EDA1BB9381E80400000079DD02004A710800","timestamp":"29.10.2015 13:45:33","code":true,"desc":"ПІДПИС ВІРНИЙ","dateFrom":"13.08.2015 11:24:31","dateTo":"12.08.2016 23:59:59","sn":"UA-14360570-1"},"organizations":[{"type":"edsOwner","name":"ПАТ КБ «ПРИВАТБАНК»","mfo":"14360570","position":"Технологічний сертифікат","ownerDesc":"Співробітник банку","address":{"type":"factual","state":"Дніпропетровська","city":"Дніпропетровськ"}},{"type":"edsIsuer","name":"ПУБЛІЧНЕ АКЦІОНЕРНЕ ТОВАРИСТВО КОМЕРЦІЙНИЙ БАНК «ПРИВАТБАНК»","unit":"АЦСК","address":{"type":"factual","state":"Дніпропетровська","city":"Дніпропетровськ"}}]}}
+```
+
+Ответ для несуществующей таски (nID_Task):
+```json
+{"code":"SYSTEM_ERR","message":"ProcessInstanceId for taskId '7315070' not found."}
+```
+
+Ответ для несуществующего атачмента (nID_Attach):
+```json
+{"code":"SYSTEM_ERR","message":"Attachment for taskId '7315073' not found."}
+```
+
+Ответ для атачмента который не имеет наложеной ЭЦП:
+```json
+{}
+```
+
+<a name="44_check_file_from_redis_sign">
+####44. Проверка ЭЦП на файле хранящемся в Redis</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**HTTP Metod: GET**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/rest/file/check_file_from_redis_sign?sID_File_Redis=[sID_File_Redis]**
+-- возвращает json объект описывающий ЭЦП файла.
+
+* sID_File_Redis - key по которому можно получить файл из хранилища Redis.
+
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/rest/file/check_file_from_redis_sign?sID_File_Redis=d2993755-70e5-409e-85e5-46ba8ce98e1d
+
+Ответ json описывающий ЭЦП:
+```json
+{"state":"ok","customer":{"inn":"1436057000","fullName":"Сервіс зберігання сканкопій","signatureData":{"name":"АЦСК ПАТ КБ «ПРИВАТБАНК»","serialNumber":"0D84EDA1BB9381E80400000079DD02004A710800","timestamp":"29.10.2015 13:45:33","code":true,"desc":"ПІДПИС ВІРНИЙ","dateFrom":"13.08.2015 11:24:31","dateTo":"12.08.2016 23:59:59","sn":"UA-14360570-1"},"organizations":[{"type":"edsOwner","name":"ПАТ КБ «ПРИВАТБАНК»","mfo":"14360570","position":"Технологічний сертифікат","ownerDesc":"Співробітник банку","address":{"type":"factual","state":"Дніпропетровська","city":"Дніпропетровськ"}},{"type":"edsIsuer","name":"ПУБЛІЧНЕ АКЦІОНЕРНЕ ТОВАРИСТВО КОМЕРЦІЙНИЙ БАНК «ПРИВАТБАНК»","unit":"АЦСК","address":{"type":"factual","state":"Дніпропетровська","city":"Дніпропетровськ"}}]}}
+```
+
+Ответ для несуществующего ключа (sID_File_Redis):
+```json
+{"code":"SYSTEM_ERR","message":"File with sID_File_Redis 'd2993755-70e5-409e-85e5-46ba8ce98e1e' not found."}
+```
+
+Ответ для файла который не имеет наложеной ЭЦП:
+```json
+{}
+```
+
+<a name="45_getServer">
+####45. Получение информации о сервере</a><br/> 
+</a><a href="#0_contents">↑Up</a>
+
+**HTTP Metod: GET**
+
+**HTTP Context: https://test.region.igov.org.ua/wf/service/server/getServer?nID=[nID]**
+-- возвращает json представление сущности Server, которая содержит информацию о сервере.
+
+* nID - nID сервера.
+
+Примеры:
+
+https://test.region.igov.org.ua/wf/service/server/getServer?nID=0
+
+Ответ:
+```json
+{
+    "sID": "Common_Region",
+    "sType": "Region",
+    "sURL_Alpha": "https://test.region.igov.org.ua/wf",
+    "sURL_Beta": "https://test-version.region.igov.org.ua/wf",
+    "sURL_Omega": "https://master-version.region.igov.org.ua/wf",
+    "sURL": "https://region.igov.org.ua/wf",
+    "nID": 0
+}
+```
+
+https://test.region.igov.org.ua/wf/service/server/getServer?nID=-1
+
+Ответ:
+
+HTTP Status: 500 (internal server error)
+
+```json
+{
+    "code": "BUSINESS_ERR",
+    "message": "Record not found"
+}
+```
+
