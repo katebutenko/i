@@ -7,12 +7,17 @@ angular.module('dashboardJsApp')
     $scope.export.to = '2015-08-01';
     $scope.export.sBP = 'dnepr_spravka_o_doxodax';
     $scope.exportURL = "/reports";
-    
+
     $scope.statistic = {};
     $scope.statistic.from = '2015-06-01';
     $scope.statistic.to = '2015-08-01';
     $scope.statistic.sBP = 'dnepr_spravka_o_doxodax';
     $scope.statisticUrl = "/reports";
+    $scope.date = {
+        options: {
+            timePicker:false
+        }
+    };
     
      $scope.initExportUrl = function () {
         reports.exportLink({ from: $scope.export.from, to: $scope.export.to, sBP: $scope.export.sBP},
@@ -40,7 +45,10 @@ angular.module('dashboardJsApp')
 
     processes.getUserProcesses().then(function (data) {
       $scope.processesList = data;
-      if ($scope.processesList != '' && $scope.processesList.length > 0) {
+
+      if (typeof $scope.processesList === 'undefined') {
+          $scope.processesList = "error";
+      } else if (typeof $scope.processesList !== 'undefined' && $scope.processesList.length > 0) {
         $scope.statistic.sBP = $scope.processesList[0].sID;
         $scope.export.sBP = $scope.processesList[0].sID;
         $scope.initExportUrl();

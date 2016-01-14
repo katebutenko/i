@@ -14,6 +14,7 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
   oServiceData,
   BankIDAccount,
   activitiForm,
+  allowOrder,
   AdminService,
   PlacesService,
   uiUploader,
@@ -21,7 +22,7 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
   MarkersFactory,
   service,
   FieldMotionService,
-  regions) {
+  $modal) {
 
   'use strict';
 
@@ -48,13 +49,32 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     $scope.data.formData.uploadScansFromBankID(oServiceData);
   };
 
+  if (!allowOrder) {
+    var modalInstance = $modal.open({
+      animation: true,
+      size: 'md',
+      templateUrl: 'app/service/allowOrderModal.html',
+      controller: function ($scope, $modalInstance, message) {
+        $scope.message = message;
+
+        $scope.close = function () {
+          $modalInstance.close();
+        }
+      },
+      resolve: {
+        message: function () {
+          return "Уже достигнуто число одновременно поданных и не закрытых заявок " +
+            "Вами по данной услуге для данного места. Вы можете перейти в закладку \"Статусы\" (например, https://igov.org.ua/order/search) " +
+            "где найдя одну из своих заявок - написать комментарий сотруднику по ней, для ее скорейшей отработке " +
+            "или закрытия.(чтоб разблокировать дельнейшую подачу)";
+        }
+      }
+    });
+  }
 
   if ( !$scope.data.formData ) {
     initializeFormData();
   }
-
-
-  // console.log('data.formData.params = ', JSON.stringify($scope.data.formData.params, null, '  '));
 
   $scope.markers = ValidationService.getValidationMarkers();
   var aID_FieldPhoneUA = $scope.markers.validate.PhoneUA.aField_ID;
@@ -101,7 +121,7 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
       }
     }
   });
-
+  MarkersFactory.validateMarkers();
   //save values for each property
   $scope.persistValues = JSON.parse(JSON.stringify($scope.data.formData.params));
   $scope.getSignFieldID = function(){
@@ -109,7 +129,8 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
   };
 
   $scope.isSignNeeded = $scope.data.formData.isSignNeeded();
-  $scope.sign = {checked : false };
+  //$scope.sign = {checked : false };
+  $scope.sign = {checked : $scope.data.formData.isSignNeededRequired() };
 
   $scope.signForm = function () {
     if($scope.data.formData.isSignNeeded){
@@ -128,7 +149,7 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     }
   };
 
-  $scope.processForm = function (form) {
+  $scope.processForm = function (form, aFormProperties) {
     $scope.isSending = true;
 
     if (!$scope.validateForm(form)) {
@@ -139,7 +160,7 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     if ($scope.sign.checked) {
       $scope.signForm();
     } else {
-      $scope.submitForm(form);
+      $scope.submitForm(form, aFormProperties);
     }
   };
 
@@ -149,10 +170,25 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     return form.$valid && bValid;
   };
 
-  $scope.submitForm = function(form) {
+  $scope.submitForm = function(form, aFormProperties) {
     if(form){
       form.$setSubmitted();
     }
+
+        
+        console.log("aFormProperties="+(aFormProperties&&aFormProperties!==null));
+        if(aFormProperties && aFormProperties!==null){
+            angular.forEach(aFormProperties, function(oProperty){
+                console.log("oProperty.id="+oProperty.id+",oProperty.type="+oProperty.type+",oProperty.bVariable="+oProperty.bVariable);
+                //oProperty.enumValues = a;
+                //if(oProperty.type === "enum" && oProperty.enumValues && oProperty.enumValues != null && oProperty.enumValues.length == 0){//oProperty.id === attr.sName && 
+                if(oProperty.type === "enum" && oProperty.bVariable && oProperty.bVariable !== null && oProperty.bVariable === true){//oProperty.id === attr.sName && 
+                    console.log('oProperty.type === "enum" && oProperty.enumValues && oProperty.enumValues != null && oProperty.enumValues.length == 0');
+                    $scope.data.formData.params[oProperty.id].value=null;
+                }
+            });   
+        }
+        
 
     ActivitiService
       .submitForm(oService, oServiceData, $scope.data.formData)
@@ -169,13 +205,53 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
         //TODO: Fix Alhoritm Luna
         var nCRC = ValidationService.getLunaValue(result.id);
 
-        submitted.data.id = result.id + nCRC; //11111111
+        submitted.data.id = oServiceData.nID_Server + "-" + result.id + nCRC; //11111111
+        //angular.forEach(BankIDAccount.customer, function (oValue, sKey) {
+        //return angular.forEach(BankIDAccount.customer, function (oValue, sKey) {
+        /*
+        var oaField = $scope.data.formData.params;
+        console.log("aField="+(oaField && oaField!==null));
+        if(oaField && oaField!==null){
+            angular.forEach(oaField, function(oValue, sKey){
+                console.log("sKey="+sKey+",oValue="+(oValue && oValue!==null));
+                if(oValue && oValue!==null){
+                    console.log("sKey="+sKey+",oValue.id="+oValue.id+",oValue.value="+oValue.value+",oValue.sCustomType="+oValue.sCustomType);
+                    if(oValue.sCustomType === "enum"){//oProperty.id === attr.sName && 
+                        console.log('oValue.sCustomType === "enum"');
+                        oValue.value=null;
+                        //$scope.data.formData.params[oField.id].value=null;
+                    }
+                }
+            });   
+        }
+          */
+        /*
+        console.log("aEnum="+(aEnum&&aEnum!==null));
+        var aEnum = $scope.data.formData.aEnum;
+        if(aEnum && aEnum!==null){
+            angular.forEach(aEnum, function(oEnum){
+                $scope.data.formData.params[oEnum.id].value=null;
+            });   
+        }
+        */
+       
+        /*if(aFormProperties && aFormProperties!==null){
+        for (var id in $scope.data.formData.params) {
+          var value = $scope.data.formData.params[id];
+            
+        }*/
+        
+        //angular.forEach($scope.data.formData.params, function(oParams){
+            
+        //});   
+
+          
         submitted.data.formData = $scope.data.formData;
 
         $scope.isSending = false;
 
         $scope.$root.data = $scope.data;
-
+        
         return $state.go(submitted, angular.extend($stateParams, {formID: null, signedFileID : null}));
       });
   };
@@ -192,46 +268,6 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
 
   $scope.isUploading = false;
   $scope.isSending = false;
-
-  var fileKey = function(file) {
-    return file.name + file.size;
-  };
-
-  $scope.uploadFile = function() {
-    uiUploader.startUpload({
-      url: ActivitiService.getUploadFileURL(oServiceData),
-      concurrency: 2,
-      onProgress: function(file) {
-        $scope.isUploading = true;
-        $scope.$apply();
-      },
-      onCompleted: function(file, response) {
-        $scope.isUploading = false;
-        if (response) {
-          try {
-            JSON.parse(response);
-            // console.log(response);
-          } catch (e) {
-            ActivitiService.updateFileField(oServiceData,
-              $scope.data.formData, $scope.files[fileKey(file)], response);
-          }
-        }
-        $scope.$apply();
-      }
-    });
-  };
-
-  $scope.files = {};
-  $scope.addFile = function(propertyId, event) {
-    var files = event.target.files;
-    if (files && files.length === 1) {
-      uiUploader.addFiles(files);
-      if (uiUploader.getFiles()[0]) {
-        $scope.files[fileKey(event.target.files[0])] = propertyId;
-      }
-    }
-    $scope.$apply();
-  };
 
   function getFieldProps(property) {
     if ($scope.referent && property.id.startsWith('bankId')){
@@ -252,15 +288,25 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     if ($scope.referent){
 
       angular.forEach($scope.activitiForm.formProperties, function (field){
+        //if (field.id.startsWith('bankId') && field.type !== 'file'){
         if (field.id.startsWith('bankId')){
           $scope.data.formData.params[field.id].value="";
+            /*if (field.type === 'file'){
+                $scope.data.formData.params[field.id].upload = true;
+                $scope.data.formData.params[field.id].scan = null;
+            }*/
+        }
+        if (field.type === 'file'){
+            $scope.data.formData.params[field.id].value="";
+            $scope.data.formData.params[field.id].upload = true;
+            $scope.data.formData.params[field.id].scan = null;
         }
       });
 
-      if ($scope.data.formData.params['bankId_scan_passport']){
+      /*if ($scope.data.formData.params['bankId_scan_passport']){
         $scope.data.formData.params['bankId_scan_passport'].upload = true;
         $scope.data.formData.params['bankId_scan_passport'].scan = null;
-      }
+      }*/
 
       $scope.data.formData.initialize($scope.activitiForm);
 
@@ -306,8 +352,9 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     if ($scope.referent && property.id == 'bankId_scan_passport'){
       return true;
     }
-    return FieldMotionService.FieldMentioned.inRequired(property.id) ?
+    var b=FieldMotionService.FieldMentioned.inRequired(property.id) ?
       FieldMotionService.isFieldRequired(property.id, $scope.data.formData.params) : property.required;
+    return b;
   };
 
   $scope.$watch('data.formData.params', watchToSetDefaultValues, true);
@@ -322,6 +369,26 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
     });
   }
 
+  $scope.htmldecode = function(encodedhtml)
+  {
+    var map = {
+      '&amp;'     :   '&',
+      '&gt;'      :   '>',
+      '&lt;'      :   '<',
+      '&quot;'    :   '"',
+      '&#39;'     :   "'"
+    };
+
+    var result = angular.copy(encodedhtml);
+    angular.forEach(map, function(value, key)
+    {
+      while(result.indexOf(key) > -1)
+        result = result.replace(key, value);
+    });
+
+    return result;
+  };
+
   $scope.getHtml = function(html) {
     return $sce.trustAsHtml(html);
   };
@@ -333,5 +400,16 @@ angular.module('app').controller('ServiceBuiltInBankIDController', function(
       $scope.submitForm();
     }
   }
+
+  $scope.isFormDataEmpty = function() {
+    for (var param in $scope.data.formData.params ) {
+      if ($scope.data.formData.params.hasOwnProperty(param) &&
+          $scope.data.formData.params[param].hasOwnProperty('value') &&
+          $scope.data.formData.params[param]['value'] != null) {
+        return false;
+      }
+    }
+    return true;
+  };
 
 });

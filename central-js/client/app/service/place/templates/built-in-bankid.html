@@ -20,7 +20,8 @@
       <div class="col-md-6 pull-left">Крок 3.
         {{data.formData.params["processName"].name==null?"":data.formData.params["processName"].name}}
       </div>
-      <div class="col-md-6 pull-right">
+        <div ng-hide="bAdmin == null || !bAdmin" style="/*display:none;*/" class="col-md-6 pull-right">
+        <!--div ng-if="bAdmin" style="/*display:none;*/" class="col-md-6 pull-right"-->
         <label for="ref" class="pull-right"> Заповнення референтом</label>
         <input type="checkbox" ng-model="referent" ng-click="onReferent()" id="ref" class="pull-right">
       </div>
@@ -63,6 +64,10 @@
       <div class="col-md-12">
         <div class="highlight">
           <form name="form" novalidate>
+              <div class="row col-md-8 col-md-push-2 update-bankid-message" ng-show="!isFormDataEmpty()">
+                  Якщо ці або будь-які інші дані, які були передані з Вашого банку, вже не актуальні,
+                  просимо Вас звернутися до цього банку для актуалізації.
+              </div>
             <div class="row"
                  ng-repeat="property in activitiForm.formProperties track by property.id"
                  ng-if="isFieldVisible(property)">
@@ -94,7 +99,7 @@
                        name="{{property.id}}"
                        ng-required="isFieldRequired(property)"
                         class="form-control_"
-                        ng-bind-html="data.formData.params[property.id].value">
+                        ng-bind-html="htmldecode(data.formData.params[property.id].value)">
                          <!--{{data.formData.params[property.id].value}}-->
                  </label>
 
@@ -107,7 +112,7 @@
                 <input ng-switch-when="string"
                        type="text"
                        name="{{property.id}}"
-                       ng-hide="property.id==='resident' || property.id === 'sCountry'"
+                       ng-hide="property.id==='resident' || property.id === 'sCountry' || property.id.indexOf('sCurrency') === 0"
                        ng-model="data.formData.params[property.id].value"
                        ng-required="isFieldRequired(property)"
                        class="form-control"
@@ -177,7 +182,7 @@
                          class="form-control_">
                     Завантаження із BankID ...</label>
                   <label ng-if="data.formData.params[property.id].scan && !data.formData.params[property.id].isLoading"
-                         name="{{property.id}}_0"
+                         name="{{property.id}}_1"
                          class="form-control_">
                     Завантажено із BankID</label>
                   <file-field name="{{property.id}}"
@@ -199,8 +204,20 @@
                 <dropdown-organ ng-switch-when="select"
                                 ng-if="property.id==='sID_Public_SubjectOrganJoin'"
                                 ng-model="data.formData.params[property.id].value"
+                                form-data-property="data.formData.params[property.id]"
                                 service-data="oServiceData"
-                                ng-required="isFieldRequired(property)"></dropdown-organ>
+                                activiti-form="activitiForm"
+                                ng-required="isFieldRequired(property)"
+                                form-data="data.formData"></dropdown-organ>
+
+                <dropdown-autocomplete ng-switch-when="select"
+                                       ng-if="property.selectType=='autocomplete'"
+                                       ng-model="data.formData.params[property.id].value"
+                                       service-data="oServiceData"
+                                       ng-required="isFieldRequired(property)"
+                                       autocomplete-data="property.autocompleteData"
+                                       autocomplete-name="property.autocompleteName"
+                                       form-data="data.formData"></dropdown-autocomplete>
 
               </div>
 
@@ -228,23 +245,31 @@
                 <div ng-message="dateelapsed">З/до дати з/після сьогоднішньої, має бути більше/менше ніж х-днів,
                   х-місяців, х-років.
                 </div>
+                <div ng-message="CustomFormat">{{ form[property.id].lastErrorMessage }}</div>
                 <div ng-message="CodeKVED">Такого КВЕД не існує - (ви не можете вписувати літери)</div>
                 <div ng-message="CodeEDRPOU">Такий код ЄДРПОУ не існує - (ви не можете вписувати літери)</div>
                 <div ng-message="CodeMFO">Такого коду банку не існує - (ви не можете вписувати літери)</div>
+                <div ng-message="FileSign">Підпис не валідний або відсутній</div>
               </div>
             </div>
             <div class="row">
               <div class="col-md-5"></div>
               <div class="col-md-3">
 
-                <label  ng-if="isSignNeeded">Накласти ЕЦП :
+
+                  <label ng-hide="!sign.checked">Після натискання "Замовити послугу"
+                    вас буде перенаправлено на сторінку підпису вашої заявки електронно-цифровим підписом
+                  </label>
+                  <label  ng-if="isSignNeeded" ng-hide="isSignNeededRequired">Накласти ЕЦП :
                   <input type="checkbox"
                          ng-model="sign.checked"
                          name="{{data.formData.getSignFieldID()}}">
                 </label>
+                  <!--label  ng-if="isSignNeededRequired ? true : sign.checked">Після натискання "Замовити послугу"-->
+                         <!--ng-model="isSignNeededRequired ? true : sign.checked"-->
                 <br/>
                 <button class="btn btn-info"
-                        ng-click="processForm(form)"
+                        ng-click="processForm(form, activitiForm.formProperties)"
                         ng-disable="cantSubmit(form)"
                         ng-hide="bSending(form)">
                   Замовити послугу

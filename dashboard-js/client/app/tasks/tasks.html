@@ -14,8 +14,15 @@
             <div class="tickets-date">
               <a href ng-repeat="mode in ticketsFilter.dateModeList" ng-click="setTicketsDateMode(mode.key)" ng-class="{'selected':ticketsFilter.dateMode==mode.key}"
               class="tickets-date-mode">{{mode.title}}</a>
-              <input type="date" class="form-control" ng-model="ticketsFilter.sDate" ng-change="applyTicketsFilter()" ng-if="ticketsFilter.dateMode=='date'"
-              />
+
+              <input datetimepicker
+                     class="form-control date-picker"
+                     type="text"
+                     ng-change="applyTicketsFilter()"
+                     options="{{ticketsFilter.options}}"
+                     format="YYYY-MM-DD"
+                     ng-if="ticketsFilter.dateMode=='date'"
+                     ng-model="ticketsFilter.sDate" />
             </div>
             <div class="clearfix"></div>
           </div>
@@ -122,9 +129,13 @@
 
           <div ng-repeat="item in taskForm" class="task-form-property" ng-show="selectedTask">
 
-            <span ng-if="['string', 'long', 'date'].indexOf(item.type) > -1">
+            <span ng-if="['string', 'long'].indexOf(item.type) > -1">
               <field-title></field-title>
               <simple-field></simple-field>
+            </span>
+            <span ng-if="['date'].indexOf(item.type) > -1">
+              <field-title></field-title>
+              <date-field></date-field>
             </span>
 
             <textarea-field></textarea-field>
@@ -162,7 +173,13 @@
 
           <div ng-show="attachments">
             <p ng-repeat="item in attachments" ng-show="taskFormLoaded">
-              Файл: <a href="/api/tasks/{{taskId}}/attachments/{{item.id}}/content/{{($index+1)}}" target="_blank"><b>{{item.name}}</b></a>              {{item.description}}
+              Файл: <a href="/api/tasks/{{taskId}}/attachments/{{item.id}}/content/{{($index+1)}}"
+                       target="_blank"><b>{{item.description}}</b> ({{item.name}})</a>
+              <button type="button" class="btn btn-success"
+                      ng-disabled="checkSignState.inProcess"
+                      ng-show="taskFormLoaded"
+                      ng-click="checkAttachmentSign(taskId, item.id, item.description)"
+                      ng-if="sSelectedTask=='selfAssigned'">Перевірити підпис</button>
             </p>
           </div>
         </div>
@@ -174,7 +191,7 @@
               <submittask-button ng-hide="selectedTask.assignee == null"></submittask-button>
             </span>
 
-            <span>
+            <span ng-show="isTest">
               <button type="button" class="btn btn-success" ng-click="clarifyToggle()" ng-if="!clarify && sSelectedTask=='selfAssigned'">Внести зауваження</button>
 
               <span ng-if="clarify">
@@ -204,4 +221,4 @@
 </div>
 
 <print-dialog></print-dialog>
-
+<sign-info-content-dialog></sign-info-content-dialog>

@@ -18,7 +18,7 @@ function getOptions(req) {
 module.exports.post = function(req, res) {
     //options, callback
     var options = getOptions(req);
-    var url = options.protocol + '://' + options.hostname + options.path + '/messages/setMessage';
+    var url = options.protocol + '://' + options.hostname + options.path + '/subject/message/setMessage';
 
     var data = req.body;
 
@@ -44,7 +44,7 @@ module.exports.post = function(req, res) {
 module.exports.get = function(req, res) {
     //options, callback
     var options = getOptions(req);
-    var url = options.protocol + '://' + options.hostname + options.path + '/messages/getMessages';
+    var url = options.protocol + '://' + options.hostname + options.path + '/subject/message/getMessages';
 
     var callback = function(error, response, body) {
         res.send(body);
@@ -58,4 +58,53 @@ module.exports.get = function(req, res) {
             'password': options.password
         }
     }, callback);
+};
+
+module.exports.findFeedback = function(req, res){
+
+  var options = getOptions(req);
+  var url = options.protocol + '://'
+    + options.hostname
+    + options.path
+    + '/subject/message/getMessageFeedbackExtended?sID_Order='
+    + req.param('sID_Order')
+    + '&sToken='+req.param('sToken');
+
+  var callback = function(error, response, body) {
+    res.send(body);
+    res.end();
+  };
+
+  return request.get({
+    'url': url,
+    'auth': {
+      'username': options.username,
+      'password': options.password
+    }
+  }, callback);
+};
+
+module.exports.postFeedback = function(req, res){
+  var options = getOptions(req);
+  var url = options.protocol + '://' + options.hostname + options.path + '/subject/message/setMessageFeedbackExtended';
+
+  var data = req.body;
+
+  var callback = function(error, response, body) {
+    res.send(body);
+    res.end();
+  };
+
+  return request.post({
+    'url': url,
+    'auth': {
+      'username': options.username,
+      'password': options.password
+    },
+    'qs': {
+      'sID_Order': data.sID_Order,
+      'sToken': data.sToken,
+      'sBody': data.sBody
+    }
+  }, callback);
 };

@@ -53,7 +53,9 @@ angular.module('app').controller('ServiceStatisticsController', function($scope,
     var nRate=0;
     angular.forEach(response.data, function (entry) {
       if (entry.nRate !== null && entry.nRate > 0) {
+          //nRate=nRate+(entry.nRate/20);
           nRate=nRate+entry.nRate;
+          //nRate=nRate/20;
       }
       //1 - однина, якщо складений (>=20) і закінч на 1 - то однина
       //>=5 && <=20 - родовий множина
@@ -67,11 +69,14 @@ angular.module('app').controller('ServiceStatisticsController', function($scope,
           return rodovii_plural;
       }
       entry['timing'] = '';
-      var days = Math.floor(entry.nTimeHours / 24), hours = entry.nTimeHours % 24;
+      var days = Math.floor(entry.nTimeMinutes / 60 / 24), hours = Math.floor(entry.nTimeMinutes / 60) % 24,
+        minutes = entry.nTimeMinutes % 60;
       var daysw = getWord(days, 'день', 'днів', 'дні'),
-        hoursw = getWord(hours, 'година', 'годин', 'години');
+        hoursw = getWord(hours, 'година', 'годин', 'години'),
+        minutesw = getWord(minutes, 'хвилина', 'хвилин', 'хвилини');
       if (days > 0) entry.timing =  days + ' ' + daysw;
       if (hours > 0) entry.timing += (entry.timing ? ', ' : '') + hours + ' ' + hoursw;
+      if (minutes > 0) entry.timing += (entry.timing ? ', ' : '') + minutes + ' ' + minutesw;
       if (!entry.timing) entry.timing = '0 годин'
     });
     $scope.nRate = nRate;

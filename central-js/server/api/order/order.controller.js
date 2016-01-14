@@ -1,7 +1,9 @@
 var request = require('request');
+var config = require('../../config/environment');
+var _ = require('lodash');
+var activiti = require('../../components/activiti');
 
 function getOptions() {
-    var config = require('../../config/environment');
     var activiti = config.activiti;
 
     return {
@@ -17,12 +19,17 @@ function getOptions() {
 module.exports.searchOrderBySID = function (req, res) {
 
     var options = getOptions();
-    var url = getUrl('/services/getHistoryEvent_Service');
+    var url = getUrl('/action/event/getHistoryEvent_Service');
     var callback = function(error, response, body) {
         res.send(body);
         res.end();
     };
 
+    //TODO: Temporary (back compatibility)
+    var sID_Order = req.params.sID_Order;
+    if(sID_Order.indexOf("-")<0){
+        sID_Order="0-"+sID_Order;
+    }
     return request.get({
         'url': url,
         'auth': {
@@ -30,7 +37,7 @@ module.exports.searchOrderBySID = function (req, res) {
             'password': options.password
         },
         'qs': {
-            'nID_Protected': req.params.nID,
+            'sID_Order': sID_Order,
             'sToken': req.query.sToken
         }
     }, callback);
@@ -38,19 +45,19 @@ module.exports.searchOrderBySID = function (req, res) {
 
 module.exports.setTaskAnswer = function(req, res) {
     var options = getOptions();
-    var url = getUrl('/setTaskAnswer');
+    var url = getUrl('/action/task/setTaskAnswer_Central');///rest
     var callback = function(error, response, body) {
       res.send(body);
       res.end();
     };
 
-    return request.post({
+    return request.get({
       'url': url,
       'auth': {
         'username': options.username,
         'password': options.password
       },
-      'body': req.body
+      'qs': req.body
     }, callback);
 };
 
@@ -58,3 +65,11 @@ function getUrl(apiURL) {
     var options = getOptions();
     return options.protocol + '://' + options.hostname + options.path + apiURL;
 }
+
+module.exports.getCountOrders = function (req, res) {
+  var params = req.params;
+  if (req.session.hasOwnProperty('subject') && req.session.subject.hasOwnProperty('nID')) {
+    params = _.extend(params, {nID_Subject: req.session.subject.nID});
+  }
+  activiti.sendGetRequest(req, res, '/action/event/getCountOrders', _.extend(req.query, params));
+};

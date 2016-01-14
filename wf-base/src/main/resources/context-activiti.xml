@@ -16,7 +16,7 @@
 
     <!-- ===========================   ACTIVITI   ========================= -->
 
-    <bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+    <bean id="processEngineConfigurationInitial" class="org.activiti.spring.SpringProcessEngineConfiguration">
         <property name="dataSource" ref="dataSource" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="databaseSchemaUpdate" value="${processEngineConfiguration.databaseSchemaUpdate}" />
@@ -42,13 +42,13 @@
                         </map>
                     </constructor-arg>
                 </bean>
-                <bean class="org.wf.dp.dniprorada.form.FormFileType" />
-                <bean class="org.wf.dp.dniprorada.form.TextAreaFormType" />
-                 <bean class="org.wf.dp.dniprorada.form.LabelFormType" />
-                 <bean class="org.wf.dp.dniprorada.form.MarkersFormType" />
-                <bean class="org.wf.dp.dniprorada.form.QueueDataFormType" />
-                <bean class="org.wf.dp.dniprorada.form.InvisibleFormType"/>
-                <bean class="org.wf.dp.dniprorada.form.SelectFormType"/>
+                <bean class="org.igov.service.business.action.task.form.FormFileType" />
+                <bean class="org.igov.service.business.action.task.form.TextAreaFormType" />
+                 <bean class="org.igov.service.business.action.task.form.LabelFormType" />
+                 <bean class="org.igov.service.business.action.task.form.MarkersFormType" />
+                <bean class="org.igov.service.business.action.task.form.QueueDataFormType" />
+                <bean class="org.igov.service.business.action.task.form.InvisibleFormType"/>
+                <bean class="org.igov.service.business.action.task.form.SelectFormType"/>
             </list>
         </property>
 
@@ -71,6 +71,9 @@
         <property name="history" value="full"/>
     </bean>
 
+	<bean id="processEngineConfiguration" class="org.igov.service.conf.MongoSpringProcessEngineConfiguration" parent="processEngineConfigurationInitial">
+		<property name="bytesDataStorage" ref="durableBytesDataStorage" />
+	</bean>
 
     <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean" destroy-method="destroy">
             <property name="processEngineConfiguration" ref="processEngineConfiguration" />
